@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include <queue>
 #include <cmath>
 #define OK 1
@@ -14,15 +14,16 @@ typedef struct LNode{
     int size=0;
     LNode *next;
 }LNode, *Linklist;
-int map[8][8]={
-        {0,0,0,0,0,0,0,0},
-        {0,1,1,-1,-1,1,1,1},
-        {0,1,1,-1,-1,1,1,1},
-        {0,1,1,1,1,1,1,1},
-        {0,1,1,1,1,1,1,1},
-        {0,1,1,1,1,1,0,1},
-        {0,-1,-1,-1,-1,0,-1,-1},
-        {0,-1,-1,-1,-1,-1,2,0}
+int map[9][9]={
+        {0,0,0,0,0,0,0,0,0},
+        {0,1,1,-1,-1,1,1,1,-1},
+        {0,1,1,-1,-1,1,1,1,-1},
+        {0,1,1,1,1,1,1,1,-1},
+        {0,1,1,1,1,1,1,1,-1},
+        {0,1,1,1,1,1,0,1,-1},
+        {0,-1,-1,-1,-1,0,-1,-1,-1},
+        {0,-1,-1,-1,-1,-1,2,0,-1},
+        {0,1,1,1,1,1,1,1,1}
 };
 typedef int STATUS;
 using namespace std;
@@ -50,6 +51,8 @@ int Tran(char c)
         return 6;
     else if(c=='#')
         return 7;
+    else if(c=='^')
+        return 8;
 }
 STATUS Init_stack(Stack &L)
 {
@@ -67,7 +70,7 @@ int empty(Stack L)
 double Get_top(Stack L)
 {
     if(empty(L)) exit(510);
-    else 
+    else
     {
         return *(L.top-1);
     }
@@ -98,7 +101,7 @@ STATUS Push(Stack &L,double p)
  */
 int In_OP(char c)
 {
-    if(c=='+'||c=='-'||c=='*'||c=='/'||c=='('||c==')'||c=='#') return true;
+    if(c=='+'||c=='-'||c=='*'||c=='/'||c=='('||c==')'||c=='#'||c=='^') return true;
     return false;
 }
 double Operate(double a,int op,double b)
@@ -112,6 +115,8 @@ double Operate(double a,int op,double b)
             return a*b;
         case(4):
             return b/a;
+        case(8):
+            return pow(b,a);
         default:
             exit(0);
     }
@@ -140,6 +145,12 @@ void show(Linklist M)
             printf("%s",p->var);
         p=p->next;
     }
+}
+int judge_num(char s)
+{
+    if(s=='0'||s=='1'||s=='2'||s=='3'||s=='4'||s=='5'||s=='6'||s=='7'||s=='8'||s=='9')
+        return true;
+    return false;
 }
 int main()
 {
@@ -219,27 +230,32 @@ int main()
     //show(L);
     LNode *t=L->next;
     int flag=1;
+    int time_step=0;
     while(t->c!='#'||Get_top(OP)!=7)
     {
 
-            if(t->c=='-')
+            if(time_step==0&&t->c=='-')
                 flag=-1;
             if(!In_OP(t->c)||flag==-1)
             {
                 if(flag==-1)
                 {
-                    while(t->next->c=='-')
+                    flag=-flag;
+                    while(!judge_num(t->c))
                     {
-                        t=t->next;
-                        flag=-flag;
-                    }
-                    t=t->next;
-                    while(t->c=='(')
-                    {
-                        Push(OP,Tran(t->c));
-                        t=t->next;
+                        if(t->c=='(')
+                        {
+                            Push(OP,Tran(t->c));
+                            t=t->next;
+                        }
+                        else if(t->c=='-')
+                        {
+                            flag=-flag;
+                            t=t->next;
+                        }
                     }
                 }
+                //printf("%c\n",t->c);
                 Push(Num,((t->c)-48)*flag);
                 t=t->next;
                 while(!judge_op(t->c)&&t->c!='.')
@@ -271,14 +287,15 @@ int main()
                 {
                     Push(OP,m);
                     t=t->next;
-                    if(t->c=='-')
+                    //printf("%d",m);
+                    if(m==5&&t->c=='-')
                         flag=-1;
                 }
                 else if(map[m][n]==0)
                 {
                     Pop(OP);
                     t=t->next;
-                    if(t->c=='-')
+                    if(m==5&&t->c=='-')
                         flag=-1;
                 }
                 else if(map[m][n]==-1)
@@ -291,6 +308,7 @@ int main()
                     printf("error!\n");
                 }
             }
+        time_step+=1;
 
     }
     double outcome=Get_top(Num);
@@ -300,7 +318,7 @@ int main()
     }
     else
     {
-        printf("%f",outcome);
+        printf("%.2f",outcome);
     }
     return 0;
 }
